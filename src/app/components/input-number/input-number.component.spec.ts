@@ -5,8 +5,9 @@ import {
   tick,
 } from '@angular/core/testing';
 
-import { TestModule, TestUtility } from 'src/tests';
-import { rational } from '~/models';
+import { rational } from '~/models/rational';
+import { setInputs, TestModule } from '~/tests';
+
 import { InputNumberComponent } from './input-number.component';
 
 describe('InputNumberComponent', () => {
@@ -16,13 +17,12 @@ describe('InputNumberComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [InputNumberComponent],
-      imports: [TestModule],
+      imports: [TestModule, InputNumberComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InputNumberComponent);
     component = fixture.componentInstance;
-    TestUtility.setInputs(fixture, {
+    setInputs(fixture, {
       value: rational(10n),
       maximum: rational(100n),
     });
@@ -34,12 +34,20 @@ describe('InputNumberComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('ngOnChanges', () => {
+    it('should handle incrementing values with invalid string', () => {
+      component._value = 'asdf';
+      setInputs(fixture, { value: rational(3n) });
+      expect(component._value).toEqual('3');
+    });
+  });
+
   describe('isMinimum', () => {
     it('should handle valid/invalid text', () => {
       expect(component.isMinimum()).toBeFalse();
-      TestUtility.setInputs(fixture, { value: 'err' });
+      setInputs(fixture, { value: 'err' });
       expect(component.isMinimum()).toBeFalse();
-      TestUtility.setInputs(fixture, { minimum: null });
+      setInputs(fixture, { minimum: null });
       expect(component.isMinimum()).toBeFalse();
     });
   });
@@ -47,9 +55,9 @@ describe('InputNumberComponent', () => {
   describe('isMaximum', () => {
     it('should handle valid/invalid text', () => {
       expect(component.isMaximum()).toBeFalse();
-      TestUtility.setInputs(fixture, { value: 'err' });
+      setInputs(fixture, { value: 'err' });
       expect(component.isMaximum()).toBeFalse();
-      TestUtility.setInputs(fixture, { maximum: null });
+      setInputs(fixture, { maximum: null });
       expect(component.isMaximum()).toBeFalse();
     });
   });
@@ -83,6 +91,14 @@ describe('InputNumberComponent', () => {
       expect(emit).toHaveBeenCalledWith(rational(4n, 3n));
       expect(component._value).toEqual('4/3');
     }));
+
+    it('should round if set to integer mode', fakeAsync(() => {
+      setInputs(fixture, { integer: true });
+      component._value = '0.5';
+      component.changeValue('input');
+      tick(500);
+      expect(emit).toHaveBeenCalledWith(rational.one);
+    }));
   });
 
   describe('increase', () => {
@@ -92,7 +108,7 @@ describe('InputNumberComponent', () => {
     });
 
     it('should round up a fractional value', () => {
-      TestUtility.setInputs(fixture, { value: rational(3n, 2n) });
+      setInputs(fixture, { value: rational(3n, 2n) });
       component.increase();
       expect(emit).toHaveBeenCalledWith(rational(2n));
     });
@@ -105,9 +121,9 @@ describe('InputNumberComponent', () => {
     });
 
     it('should round down a fractional value', () => {
-      TestUtility.setInputs(fixture, { value: rational(3n, 2n) });
+      setInputs(fixture, { value: rational(3n, 2n) });
       component.decrease();
-      expect(emit).toHaveBeenCalledWith(rational(1n));
+      expect(emit).toHaveBeenCalledWith(rational.one);
     });
   });
 });

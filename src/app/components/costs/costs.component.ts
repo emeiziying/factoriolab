@@ -1,59 +1,68 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Store } from '@ngrx/store';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 
-import { CostKey, CostSettings, rational } from '~/models';
-import { ContentService } from '~/services';
-import { LabState, Settings } from '~/store';
+import { spread } from '~/helpers';
+import { rational } from '~/models/rational';
+import { CostKey, CostSettings } from '~/models/settings/cost-settings';
+import { TranslatePipe } from '~/pipes/translate.pipe';
+import { ContentService } from '~/services/content.service';
+import {
+  initialSettingsState,
+  SettingsService,
+} from '~/store/settings.service';
+
+import { InputNumberComponent } from '../input-number/input-number.component';
+import { DialogComponent } from '../modal';
 
 @Component({
   selector: 'lab-costs',
+  standalone: true,
+  imports: [
+    FormsModule,
+    ButtonModule,
+    CheckboxModule,
+    DialogModule,
+    TooltipModule,
+    InputNumberComponent,
+    TranslatePipe,
+  ],
   templateUrl: './costs.component.html',
   styleUrls: ['./costs.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CostsComponent {
-  ref = inject(ChangeDetectorRef);
-  store = inject(Store<LabState>);
+export class CostsComponent extends DialogComponent {
   contentSvc = inject(ContentService);
+  settingsSvc = inject(SettingsService);
 
-  visible = false;
-  editValue = { ...Settings.initialSettingsState.costs };
+  editValue = spread(initialSettingsState.costs);
 
   rational = rational;
 
   get modified(): boolean {
     return (Object.keys(this.editValue) as CostKey[]).some(
-      (k) => this.editValue[k] !== Settings.initialSettingsState.costs[k],
+      (k) => this.editValue[k] !== initialSettingsState.costs[k],
     );
   }
 
-  constructor() {
-    this.contentSvc.showCosts$.pipe(takeUntilDestroyed()).subscribe(() => {
-      this.visible = true;
-      this.ref.markForCheck();
-    });
-
-    this.store
-      .select(Settings.getCosts)
-      .pipe(takeUntilDestroyed())
-      .subscribe((c) => this.initEdit(c));
+  initEdit(costs: CostSettings): void {
+    this.editValue = spread(costs);
   }
 
-  initEdit(costs: CostSettings): void {
-    this.editValue = { ...costs };
+  open(value: CostSettings): void {
+    this.initEdit(value);
+    this.show();
   }
 
   reset(): void {
-    this.editValue = { ...Settings.initialSettingsState.costs };
+    this.editValue = spread(initialSettingsState.costs);
   }
 
   save(): void {
-    this.store.dispatch(new Settings.SetCostsAction(this.editValue));
+    const costs = this.editValue;
+    this.settingsSvc.apply({ costs });
   }
 }

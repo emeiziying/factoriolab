@@ -1,4 +1,5 @@
 import { coalesce } from '~/helpers';
+
 import {
   SankeyGraph,
   SankeyLinkExtraProperties,
@@ -80,8 +81,7 @@ export function minFAS<
       let found = false;
       for (const node of nodes) {
         const indegree = indegrees.get(node);
-        // Unclear how to test this block
-        // istanbul ignore if
+        // istanbul ignore if: Unclear how to test this block
         if (indegree === 0) {
           found = true;
           s1.push(node);
@@ -113,14 +113,14 @@ export function minFAS<
 
   s2.reverse();
   const order = s1.concat(s2);
-  const orderMap = new Map();
+  const orderMap = new Map<SankeyNode<N, L>, number>();
   for (const [i, node] of order.entries()) {
     orderMap.set(node, i);
   }
 
   for (const link of graph.links) {
-    const i = orderMap.get(link.source);
-    const j = orderMap.get(link.target);
+    const i = coalesce(orderMap.get(link.source as SankeyNode<N, L>), 0);
+    const j = coalesce(orderMap.get(link.target as SankeyNode<N, L>), 0);
     if (i === j) {
       link.direction = 'self';
     } else if (i < j) {

@@ -1,4 +1,6 @@
 :host {
+  display: flex;
+  flex-direction: column;
   font-size: 12px;
 }
 
@@ -12,9 +14,7 @@
 }
 
 table {
-  width: 100%;
-
   td {
-    white-space: nowrap;
+    word-break: normal;
   }
 }

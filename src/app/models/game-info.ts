@@ -1,64 +1,73 @@
-import { Game } from './enum';
-import { ColumnKey } from './settings';
+import { Game } from './enum/game';
 
 /** Game information, nonconfigurable */
 export interface GameInfo {
   icon: string;
   route: string;
   label: string;
-  meta: string;
   modId: string;
-  hideColumns: ColumnKey[];
 }
 
 /** Game information data, nonconfigurable */
 export const gameInfo: Record<Game, GameInfo> = {
   [Game.Factorio]: {
-    icon: 'factorio',
-    route: 'factorio',
+    icon: 'game-factorio',
+    route: '/spa',
     label: 'options.game.factorio',
-    meta: 'Factorio',
-    modId: '1.1',
-    hideColumns: [],
+    modId: 'spa',
   },
   [Game.DysonSphereProgram]: {
-    icon: 'dyson-sphere-program',
-    route: 'dsp',
+    icon: 'game-dyson-sphere-program',
+    route: '/dsp',
     label: 'options.game.dysonSphereProgram',
-    meta: 'Dyson Sphere Program',
     modId: 'dsp',
-    hideColumns: ['beacons', 'pollution', 'wagons'],
   },
   [Game.Satisfactory]: {
-    icon: 'satisfactory',
-    route: 'satisfactory',
+    icon: 'game-satisfactory',
+    route: '/sfy',
     label: 'options.game.satisfactory',
-    meta: 'Satisfactory',
     modId: 'sfy',
-    hideColumns: ['beacons', 'pollution'],
   },
   [Game.CaptainOfIndustry]: {
-    icon: 'captain-of-industry',
-    route: 'coi',
+    icon: 'game-captain-of-industry',
+    route: '/coi',
     label: 'options.game.captainOfIndustry',
-    meta: 'Captain of Industry',
     modId: 'coi',
-    hideColumns: ['beacons', 'pollution', 'power', 'wagons'],
   },
   [Game.FinalFactory]: {
-    icon: 'final-factory',
-    route: 'final-factory',
+    icon: 'game-final-factory',
+    route: '/ffy',
     label: 'options.game.finalFactory',
-    meta: 'Final Factory',
     modId: 'ffy',
-    hideColumns: ['beacons', 'pollution', 'power', 'wagons'],
   },
   [Game.Techtonica]: {
-    icon: 'techtonica',
-    route: 'techtonica',
+    icon: 'game-techtonica',
+    route: '/tta',
     label: 'options.game.techtonica',
-    meta: 'Techtonica',
     modId: 'tta',
-    hideColumns: ['beacons', 'pollution', 'wagons'],
+  },
+  [Game.FactorY]: {
+    icon: 'game-factor-y',
+    route: '/fay',
+    label: 'options.game.factorY',
+    modId: 'fay',
+  },
+  [Game.Mindustry]: {
+    icon: 'game-mindustry',
+    route: '/mds',
+    label: 'options.game.mindustry',
+    modId: 'mds',
+  },
+  [Game.Foundry]: {
+    icon: 'game-foundry',
+    route: '/fdy',
+    label: 'options.game.foundry',
+    modId: 'fdy',
+  },
+  [Game.OutworldStation]: {
+    icon: 'game-outworld-station',
+    route: '/ows',
+    label: 'options.game.outworldStation',
+    modId: 'ows',
   },
 };

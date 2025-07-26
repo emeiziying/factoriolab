@@ -3,8 +3,8 @@ import {
   fromNumber,
   fromString,
   gcd,
-  rational,
   Rational,
+  rational,
 } from './rational';
 
 describe('gcd', () => {
@@ -140,6 +140,21 @@ describe('Rational', () => {
 
     it('should handle fractions', () => {
       expect(rational(3, 2).floor()).toEqual(rational(1n));
+    });
+  });
+
+  describe('trunc', () => {
+    it('should truncate towards zero', () => {
+      expect(rational(12345, 10000).trunc(3)).toEqual(rational(617n, 500n));
+      expect(rational(-12345, 10000).trunc(3)).toEqual(rational(-617n, 500n));
+    });
+  });
+
+  describe('round', () => {
+    it('should round integers or up/down', () => {
+      expect(rational(2n).round()).toEqual(rational(2n));
+      expect(rational(2n, 3n).round()).toEqual(rational(1n));
+      expect(rational(4n, 3n).round()).toEqual(rational(1n));
     });
   });
 

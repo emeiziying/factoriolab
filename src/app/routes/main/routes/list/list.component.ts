@@ -1,14 +1,12 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-import { AppSharedModule } from '~/app-shared.module';
-import { MainSharedModule } from '../../main-shared.module';
+import { StepsComponent } from '~/components/steps/steps.component';
 
 @Component({
+  selector: 'lab-list',
   standalone: true,
-  imports: [CommonModule, AppSharedModule, MainSharedModule],
+  imports: [StepsComponent],
   templateUrl: './list.component.html',
-  styleUrls: ['./list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListComponent {}

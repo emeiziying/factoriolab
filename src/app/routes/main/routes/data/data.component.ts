@@ -1,19 +1,32 @@
+import { KeyValuePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Store } from '@ngrx/store';
 import { MenuItem } from 'primeng/api';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
 
-import { LabState, Settings } from '~/store';
+import { TranslatePipe } from '~/pipes/translate.pipe';
+import { SettingsService } from '~/store/settings.service';
 
 @Component({
+  selector: 'lab-data',
+  standalone: true,
+  imports: [
+    KeyValuePipe,
+    BreadcrumbModule,
+    ButtonModule,
+    TableModule,
+    TranslatePipe,
+  ],
   templateUrl: './data.component.html',
   styleUrls: ['./data.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataComponent {
-  store = inject(Store<LabState>);
+  settingsSvc = inject(SettingsService);
 
-  home = this.store.selectSignal(Settings.getModMenuItem);
-  data = this.store.selectSignal(Settings.getDataset);
+  home = this.settingsSvc.modMenuItem;
+  data = this.settingsSvc.dataset;
 
   collections: MenuItem[] = [
     {
@@ -75,6 +88,11 @@ export class DataComponent {
       label: 'data.recipes',
       routerLink: 'recipes',
       id: 'recipeIds',
+    },
+    {
+      label: 'data.locations',
+      routerLink: 'locations',
+      id: 'locationIds',
     },
   ];
 }

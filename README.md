@@ -1,17 +1,20 @@
 # FactorioLab
 
-[![prod](https://github.com/factoriolab/factoriolab/actions/workflows/prod.yml/badge.svg)](https://github.com/factoriolab/factoriolab/actions/workflows/prod.yml) [![tests](https://github.com/factoriolab/factoriolab/actions/workflows/tests.yml/badge.svg)](https://github.com/factoriolab/factoriolab/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/factoriolab/factoriolab/branch/master/graph/badge.svg)](https://codecov.io/gh/factoriolab/factoriolab) [![Known Vulnerabilities](https://snyk.io/test/github/factoriolab/factoriolab/badge.svg?targetFile=package.json)](https://snyk.io/test/github/factoriolab/factoriolab?targetFile=package.json)
+[![prod](https://github.com/factoriolab/factoriolab/actions/workflows/prod.yml/badge.svg)](https://github.com/factoriolab/factoriolab/actions/workflows/prod.yml) [![tests](https://github.com/factoriolab/factoriolab/actions/workflows/tests.yml/badge.svg)](https://github.com/factoriolab/factoriolab/actions/workflows/tests.yml)
 
 This is the repository for the [FactorioLab](https://factoriolab.github.io) project, a tool for calculating resource and factory requirements for factory games.
 
-| Supported games                                             |                                                           |                                                                           |
-| ----------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [Factorio](https://factorio.com)                            | [Calculator](https://factoriolab.github.io/factorio)      | [Steam](https://store.steampowered.com/app/427520/Factorio/)              |
-| Dyson Sphere Program                                        | [Calculator](https://factoriolab.github.io/dsp)           | [Steam](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) |
-| [Satisfactory](https://www.satisfactorygame.com/)           | [Calculator](https://factoriolab.github.io/satisfactory)  | [Steam](https://store.steampowered.com/app/526870/Satisfactory/)          |
-| [Captain of Industry](https://www.captain-of-industry.com/) | [Calculator](https://factoriolab.github.io/coi)           | [Steam](https://store.steampowered.com/app/1594320/Captain_of_Industry/)  |
-| [Techtonica](https://techtonicagame.com/)                   | [Calculator](https://factoriolab.github.io/techtonica)    | [Steam](https://store.steampowered.com/app/1457320/Techtonica/)           |
-| Final Factory                                               | [Calculator](https://factoriolab.github.io/final-factory) | [Steam](https://store.steampowered.com/app/1383150/Final_Factory/)        |
+| Supported games                                                   |                                                              |                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| [Factorio](https://factorio.com)                                  | [Calculator](https://factoriolab.github.io/factorio)         | [Steam](https://store.steampowered.com/app/427520/Factorio/)               |
+| Dyson Sphere Program                                              | [Calculator](https://factoriolab.github.io/dsp)              | [Steam](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/)  |
+| [Satisfactory](https://www.satisfactorygame.com/)                 | [Calculator](https://factoriolab.github.io/satisfactory)     | [Steam](https://store.steampowered.com/app/526870/Satisfactory/)           |
+| [Captain of Industry](https://www.captain-of-industry.com/)       | [Calculator](https://factoriolab.github.io/coi)              | [Steam](https://store.steampowered.com/app/1594320/Captain_of_Industry/)   |
+| [Techtonica](https://techtonicagame.com/)                         | [Calculator](https://factoriolab.github.io/techtonica)       | [Steam](https://store.steampowered.com/app/1457320/Techtonica/)            |
+| Final Factory                                                     | [Calculator](https://factoriolab.github.io/final-factory)    | [Steam](https://store.steampowered.com/app/1383150/Final_Factory/)         |
+| [Factor Y](https://buckmartin.de/products/factor-y.html)          | [Calculator](https://factoriolab.github.io/fay)              | [Steam](https://store.steampowered.com/app/2220850?utm_source=FactorioLab) |
+| [Foundry](https://www.paradoxinteractive.com/games/foundry/about) | [Calculator](https://factoriolab.github.io/foundry)          | [Steam](https://store.steampowered.com/app/983870/FOUNDRY/)                |
+| Outworld Station                                                  | [Calculator](https://factoriolab.github.io/outworld-station) | [Steam](https://store.steampowered.com/app/3242950/Outworld_Station/)      |
 
 This project is intended to build on the features of the Kirk McDonald [Factorio Calculator](https://kirkmcdonald.github.io) ([GitHub](https://github.com/KirkMcDonald/kirkmcdonald.github.io)). It is built from the ground up using Angular, Redux, and TypeScript.
 
@@ -31,10 +34,9 @@ The staging environment, for testing pull requests, can be found at <https://fac
 To run this project locally:
 
 1. Install [NodeJS](https://nodejs.org/en/)
-1. Install Angular CLI, using `npm install -g @angular/cli`
 1. Install dependencies, using `npm ci`
 1. Build and serve the project, using `npm start`
-1. Open a browser at `https://localhost:4200`
+1. Open a browser at <http://localhost:4200>
 
 The app will reload automatically if source code is changed.
 

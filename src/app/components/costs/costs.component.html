@@ -4,11 +4,13 @@
   [dismissableMask]="true"
   [draggable]="false"
   [resizable]="false"
-  [style]="{ width: '300px' }"
+  [focusOnShow]="false"
+  [style]="{ width: '310px' }"
   [header]="'costs.header' | translate"
+  appendTo="body"
   (onHide)="save()"
 >
-  <table class="result-info my-2">
+  <table class="w-100">
     <tr [pTooltip]="'costs.recipeTooltip' | translate">
       <td>{{ 'costs.recipe' | translate }}</td>
       <td>
@@ -29,14 +31,24 @@
         ></lab-input-number>
       </td>
     </tr>
+    <tr [pTooltip]="'costs.recyclingTooltip' | translate">
+      <td>{{ 'costs.recycling' | translate }}</td>
+      <td>
+        <lab-input-number
+          width="8rem"
+          [value]="editValue.recycling"
+          (setValue)="editValue.recycling = $event"
+        ></lab-input-number>
+      </td>
+    </tr>
     <tr [pTooltip]="'costs.footprintTooltip' | translate">
       <td>{{ 'costs.footprint' | translate }}</td>
-      <td>
+      <td class="p-2">
         <p-checkbox
           [ngModel]="editValue.footprint.nonzero()"
           [binary]="true"
           (onChange)="
-            editValue.footprint = $event.checked ? rational(1) : rational(0)
+            editValue.footprint = $event.checked ? rational.one : rational.zero
           "
         ></p-checkbox>
       </td>
@@ -77,8 +89,8 @@
         <lab-input-number
           width="8rem"
           [value]="editValue.maximize"
-          [minimum]="null"
-          [maximum]="rational(0)"
+          [minimum]="undefined"
+          [maximum]="rational.zero"
           (setValue)="editValue.maximize = $event"
         ></lab-input-number>
       </td>
@@ -103,7 +115,16 @@
       class="p-button-outlined"
       icon="fa-solid fa-check"
       [label]="'ok' | translate"
-      (click)="visible = false"
+      (click)="hide()"
+    ></button>
+    <button
+      pButton
+      pRipple
+      type="button"
+      class="p-button-outlined p-button-secondary"
+      icon="fa-solid fa-xmark"
+      [label]="'cancel' | translate"
+      (click)="hide(true)"
     ></button>
   </ng-template>
 </p-dialog>

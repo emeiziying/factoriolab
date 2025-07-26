@@ -1,54 +1,24 @@
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { MockStore } from '@ngrx/store/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TestModule } from 'src/tests';
-import { ErrorService } from '~/services';
-import { App, LabState } from '~/store';
+import { TestModule } from '~/tests';
+
 import { MainComponent } from './main.component';
 
 describe('MainComponent', () => {
   let component: MainComponent;
   let fixture: ComponentFixture<MainComponent>;
-  let router: Router;
-  let mockStore: MockStore<LabState>;
-  let errorSvc: ErrorService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MainComponent],
-      imports: [TestModule],
+      imports: [TestModule, MainComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MainComponent);
-    router = TestBed.inject(Router);
-    mockStore = TestBed.inject(MockStore);
-    errorSvc = TestBed.inject(ErrorService);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  describe('reset', () => {
-    it('should set loading indicator and reset application', fakeAsync(() => {
-      spyOn(errorSvc.message, 'set');
-      spyOn(router, 'navigateByUrl');
-      spyOn(mockStore, 'dispatch');
-      component.reset();
-      expect(component.isResetting).toBeTrue();
-      tick(100);
-      expect(errorSvc.message.set).toHaveBeenCalledWith(null);
-      expect(router.navigateByUrl).toHaveBeenCalledWith('factorio');
-      expect(mockStore.dispatch).toHaveBeenCalledWith(new App.ResetAction());
-      expect(component.isResetting).toBeFalse();
-    }));
   });
 });

@@ -1,68 +1,77 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Store } from '@ngrx/store';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TableModule } from 'primeng/table';
 
+import { spread } from '~/helpers';
 import {
   ColumnKey,
   ColumnSettings,
   columnsInfo,
   ColumnsState,
-  Entities,
-} from '~/models';
-import { ContentService } from '~/services';
-import { LabState, Preferences, Settings } from '~/store';
+  initialColumnsState,
+} from '~/models/settings/column-settings';
+import { Entities } from '~/models/utils';
+import { PrecisionExamplePipe } from '~/pipes/precision-example.pipe';
+import { TranslatePipe } from '~/pipes/translate.pipe';
+import {
+  initialPreferencesState,
+  PreferencesService,
+} from '~/store/preferences.service';
+import { SettingsService } from '~/store/settings.service';
+
+import { DialogComponent } from '../modal';
 
 @Component({
   selector: 'lab-columns',
+  standalone: true,
+  imports: [
+    FormsModule,
+    ButtonModule,
+    CheckboxModule,
+    DialogModule,
+    InputNumberModule,
+    TableModule,
+    PrecisionExamplePipe,
+    TranslatePipe,
+  ],
   templateUrl: './columns.component.html',
   styleUrls: ['./columns.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ColumnsComponent {
-  ref = inject(ChangeDetectorRef);
-  store = inject(Store<LabState>);
-  contentSvc = inject(ContentService);
+export class ColumnsComponent extends DialogComponent {
+  preferencesSvc = inject(PreferencesService);
+  settingsSvc = inject(SettingsService);
 
-  columnOptions = this.store.selectSignal(Settings.getColumnOptions);
+  columnOptions = this.settingsSvc.columnOptions;
 
-  visible = false;
-  editValue: Entities<ColumnSettings> = {};
+  editValue: Entities<ColumnSettings> = initialColumnsState;
   columnsInf = columnsInfo;
 
   get modified(): boolean {
     return (Object.keys(this.editValue) as ColumnKey[]).some(
       (k) =>
         this.editValue[k].precision !==
-          Preferences.initialPreferencesState.columns[k].precision ||
-        this.editValue[k].show !==
-          Preferences.initialPreferencesState.columns[k].show,
+          initialPreferencesState.columns[k].precision ||
+        this.editValue[k].show !== initialPreferencesState.columns[k].show,
     );
-  }
-
-  constructor() {
-    this.contentSvc.showColumns$.pipe(takeUntilDestroyed()).subscribe(() => {
-      this.visible = true;
-      this.ref.markForCheck();
-    });
-
-    this.store
-      .select(Settings.getColumnsState)
-      .pipe(takeUntilDestroyed())
-      .subscribe((c) => this.initEdit(c));
   }
 
   initEdit(columns: ColumnsState): void {
     this.editValue = (Object.keys(columns) as ColumnKey[])
       .filter((c) => columnsInfo[c] != null) // Filter out any obsolete keys
       .reduce((e: Entities<ColumnSettings>, c) => {
-        e[c] = { ...columns[c] };
+        e[c] = spread(columns[c]);
         return e;
       }, {});
+  }
+
+  open(value: ColumnsState): void {
+    this.initEdit(value);
+    this.show();
   }
 
   changeFraction(value: boolean, column: ColumnKey): void {
@@ -70,12 +79,11 @@ export class ColumnsComponent {
   }
 
   reset(): void {
-    this.initEdit(Preferences.initialPreferencesState.columns);
+    this.initEdit(initialPreferencesState.columns);
   }
 
   save(): void {
-    this.store.dispatch(
-      new Preferences.SetColumnsAction(this.editValue as ColumnsState),
-    );
+    const columns = this.editValue as ColumnsState;
+    this.preferencesSvc.apply({ columns });
   }
 }

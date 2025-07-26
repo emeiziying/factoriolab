@@ -4,30 +4,97 @@
     <ng-container
       *ngTemplateOutlet="recipeProcess; context: { recipe }"
     ></ng-container>
+    @if (adjustedRecipe()?.effects; as effects) {
+      <table>
+        @if (!effects.consumption.eq(rational.one)) {
+          <tr
+            [class.error-text]="
+              data().flags.has('minimumFactor') &&
+              effects.consumption.eq(recipeSvc.minFactor)
+            "
+          >
+            <td>{{ 'data.energyConsumption' | translate }}</td>
+            <td>{{ effects.consumption.sub(rational.one) | bonusPercent }}</td>
+          </tr>
+        }
+        @if (!effects.speed.eq(rational.one)) {
+          <tr
+            [class.error-text]="
+              data().flags.has('minimumFactor') &&
+              effects.speed.eq(recipeSvc.minFactor)
+            "
+          >
+            <td>{{ 'data.speed' | translate }}</td>
+            <td>{{ effects.speed.sub(rational.one) | bonusPercent }}</td>
+          </tr>
+        }
+        @if (!effects.productivity.eq(rational.one)) {
+          <tr
+            [class.error-text]="
+              data().flags.has('maximumFactor') &&
+              effects.productivity.eq(recipeSvc.maxFactor)
+            "
+          >
+            <td>{{ 'data.productivity' | translate }}</td>
+            <td>{{ effects.productivity.sub(rational.one) | bonusPercent }}</td>
+          </tr>
+        }
+        @if (!effects.pollution.eq(rational.one)) {
+          <tr
+            [class.error-text]="
+              data().flags.has('minimumFactor') &&
+              effects.pollution.eq(recipeSvc.minFactor)
+            "
+          >
+            <td>{{ 'data.pollution' | translate }}</td>
+            <td>{{ effects.pollution.sub(rational.one) | bonusPercent }}</td>
+          </tr>
+        }
+        @if (effects.quality.nonzero()) {
+          <tr>
+            <td>{{ 'data.quality' | translate }}</td>
+            <td>{{ effects.quality | bonusPercent }}</td>
+          </tr>
+        }
+      </table>
+    }
   }
 } @else {
   @if (data().itemEntities[id()]; as item) {
     <div class="title">{{ item.name }}</div>
-    @if (
-      (type() === 'item' || type() === 'technology') &&
-        data().itemRecipeIds[id()].length === 1 &&
-        data().recipeEntities[data().itemRecipeIds[id()][0]];
-      as recipe
-    ) {
+    @if (recipe(); as recipe) {
       <ng-container *ngTemplateOutlet="recipeProcess; context: { recipe }">
       </ng-container>
     }
-    @if (
-      type() === 'technology' && data().technologyEntities[id()].prerequisites;
-      as prerequisites
-    ) {
-      <div class="mt-1">{{ 'data.prerequisites' | translate }}</div>
-      <div>
-        @for (prerequisite of prerequisites; track prerequisite) {
-          <i [class]="prerequisite | iconSmClass"> </i>
+    @if (type() === 'technology') {
+      @if (data().technologyEntities[id()].prerequisites; as prerequisites) {
+        <div class="mt-1">{{ 'data.prerequisites' | translate }}</div>
+        <div>
+          @for (prerequisite of prerequisites; track prerequisite) {
+            <i [class]="prerequisite | iconSmClass"> </i>
+          }
+        </div>
+      }
+      @if (data().technologyEntities[id()].unlockedRecipes; as recipes) {
+        @if (recipes.length > 5) {
+          <table>
+            <tr>
+              <td>{{ 'data.unlockedRecipes' | translate }}</td>
+              <td>{{ recipes.length }}</td>
+            </tr>
+          </table>
+        } @else {
+          <div class="mt-1">{{ 'data.unlockedRecipes' | translate }}</div>
+          <div>
+            @for (recipeId of recipes; track recipeId) {
+              <i [class]="recipeId | iconSmClass: 'recipe'"> </i>
+            }
+          </div>
         }
-      </div>
+      }
     }
+  } @else if (type() === 'module') {
+    <div>{{ 'data.moduleSlots' | translate }}</div>
   }
   @if (type() === 'beacon' && data().beaconEntities[id()]; as beacon) {
     <table>
@@ -115,13 +182,45 @@
   }
   @if (type() === 'machine' && data().machineEntities[id()]; as machine) {
     <table>
-      @if (machine.speed && data().game !== Game.CaptainOfIndustry) {
+      @if (machine.speed && !data().flags.has('hideMachineSettings')) {
         <tr>
           <td>{{ 'data.craftingSpeed' | translate }}</td>
           <td>{{ machine.speed | round }}</td>
         </tr>
       }
-      @if (machine.modules && data().game === Game.Factorio) {
+      @if (machine.baseEffect; as eff) {
+        @if (eff.consumption && eff.consumption.nonzero()) {
+          <tr>
+            <td>{{ 'data.energyConsumption' | translate }}</td>
+            <td>{{ eff.consumption | bonusPercent }}</td>
+          </tr>
+        }
+        @if (eff.speed && eff.speed.nonzero()) {
+          <tr>
+            <td>{{ 'data.speed' | translate }}</td>
+            <td>{{ eff.speed | bonusPercent }}</td>
+          </tr>
+        }
+        @if (eff.productivity && eff.productivity.nonzero()) {
+          <tr>
+            <td>{{ 'data.productivity' | translate }}</td>
+            <td>{{ eff.productivity | bonusPercent }}</td>
+          </tr>
+        }
+        @if (eff.pollution && eff.pollution.nonzero()) {
+          <tr>
+            <td>{{ 'data.pollution' | translate }}</td>
+            <td>{{ eff.pollution | bonusPercent }}</td>
+          </tr>
+        }
+        @if (eff.quality && eff.quality.nonzero()) {
+          <tr>
+            <td>{{ 'data.quality' | translate }}</td>
+            <td>{{ eff.quality | bonusPercent }}</td>
+          </tr>
+        }
+      }
+      @if (machine.modules) {
         <tr>
           <td>{{ 'data.modules' | translate }}</td>
           <td>{{ machine.modules }}</td>
@@ -190,10 +289,18 @@
       <div
         class="d-flex align-items-center justify-content-center flex-wrap mt-2"
       >
-        @for (input of machine.consumption | keyvalue; track input) {
+        @for (input of machine.consumption | keyvalue; track input.key) {
           <i [class]="input.key | iconSmClass">
             <span>{{ input.value | round }}</span>
           </i>
+        }
+      </div>
+    }
+    @if (machine.locations) {
+      <div class="mt-1">{{ 'data.locations' | translate }}</div>
+      <div>
+        @for (location of machine.locations; track location) {
+          <i [class]="location | iconSmClass: 'location'"></i>
         }
       </div>
     }
@@ -224,6 +331,12 @@
           <td>{{ module.pollution | bonusPercent }}</td>
         </tr>
       }
+      @if (module.quality && module.quality.nonzero()) {
+        <tr>
+          <td>{{ 'data.quality' | translate }}</td>
+          <td>{{ module.quality | bonusPercent }}</td>
+        </tr>
+      }
       @if (module.sprays && module.sprays.nonzero()) {
         <tr>
           <td>{{ 'data.sprays' | translate }}</td>
@@ -249,25 +362,42 @@
       class="d-flex align-items-center justify-content-center flex-wrap mt-2"
     >
       <i [class]="'time' | iconSmClass"
-        ><span>{{ recipe.time }}</span></i
+        ><span>{{ recipe.time.toNumber() | round }}</span></i
       >
-      @for (input of recipe.in | keyvalue; track input) {
+      @for (input of recipe.in | keyvalue; track input.key) {
         <i [class]="input.key | iconSmClass"
           ><span>{{ input.value | round }}</span></i
         >
       }
       <i class="m-1 me-2 fa-solid fa-arrow-right"></i>
-      @for (output of recipe.out | keyvalue; track output) {
+      @for (output of recipe.out | keyvalue; track output.key) {
         <i [class]="output.key | iconSmClass"
           ><span>{{ output.value | round }}</span></i
         >
       }
     </div>
-    <div class="mt-1">{{ 'data.producers' | translate }}</div>
-    <div>
-      @for (producer of recipe.producers; track producer) {
-        <i [class]="producer | iconSmClass"></i>
-      }
-    </div>
+    @if (!recipe.flags.has('hideProducer')) {
+      <div class="mt-1">{{ 'data.producers' | translate }}</div>
+      <div>
+        @for (producer of recipe.producers; track producer) {
+          @if (data().itemEntities[producer].quality == null) {
+            <i [class]="producer | iconSmClass"></i>
+          }
+        }
+      </div>
+    }
+    @if (recipe.locations) {
+      <div class="mt-1">{{ 'data.locations' | translate }}</div>
+      <div>
+        @for (location of recipe.locations; track location) {
+          <i [class]="location | iconSmClass: 'location'"></i>
+        }
+      </div>
+    }
   }
 </ng-template>
+@if (action(); as action) {
+  <div>
+    <i>{{ action }}</i>
+  </div>
+}

@@ -1,5 +1,18 @@
-import { cloneEntities, Entities, toRationalEntities } from '../entities';
-import { rational, Rational } from '../rational';
+import { cloneEntities, spread, toRationalEntities } from '~/helpers';
+
+import { Quality } from '../enum/quality';
+import { Rational, rational } from '../rational';
+import { Entities } from '../utils';
+import { ModuleEffect } from './module';
+
+export type RecipeFlag =
+  | 'mining'
+  | 'technology'
+  | 'burn'
+  | 'grow'
+  | 'recycling'
+  | 'locked'
+  | 'hideProducer';
 
 export interface RecipeJson {
   id: string;
@@ -15,17 +28,15 @@ export interface RecipeJson {
   cost?: number | string;
   /** If recipe is a rocket launch, indicates the rocket part recipe used */
   part?: string;
-  /** If a recipe is locked initially, indicates what technology is required */
-  unlockedBy?: string;
-  isMining?: boolean;
-  isTechnology?: boolean;
-  isBurn?: boolean;
   /** Used to link the recipe to an alternate icon id */
   icon?: string;
   /** Used to add extra text to an already defined icon */
   iconText?: string;
   /** Used to override the machine's usage for this recipe */
   usage?: number | string;
+  disallowedEffects?: ModuleEffect[];
+  locations?: string[];
+  flags?: RecipeFlag[];
 }
 
 export interface Recipe {
@@ -42,11 +53,6 @@ export interface Recipe {
   cost?: Rational;
   /** If recipe is a rocket launch, indicates the rocket part recipe used */
   part?: string;
-  /** If a recipe is locked initially, indicates what technology unlocks it */
-  unlockedBy?: string;
-  isMining?: boolean;
-  isTechnology?: boolean;
-  isBurn?: boolean;
   /** Used to link the recipe to an alternate icon id */
   icon?: string;
   /** Used to add extra text to an already defined icon */
@@ -55,6 +61,10 @@ export interface Recipe {
   drain?: Rational;
   consumption?: Rational;
   pollution?: Rational;
+  quality?: Quality;
+  disallowedEffects?: ModuleEffect[];
+  locations?: string[];
+  flags: Set<RecipeFlag>;
 }
 
 export function parseRecipe(json: RecipeJson): Recipe {
@@ -70,29 +80,25 @@ export function parseRecipe(json: RecipeJson): Recipe {
     catalyst: toRationalEntities(json.catalyst),
     cost: rational(json.cost),
     part: json.part,
-    unlockedBy: json.unlockedBy,
-    isMining: json.isMining,
-    isTechnology: json.isTechnology,
-    isBurn: json.isBurn,
     icon: json.icon,
     iconText: json.iconText,
     usage: rational(json.usage),
+    disallowedEffects: json.disallowedEffects,
+    locations: json.locations,
+    flags: new Set(json.flags),
   };
 }
 
 export function cloneRecipe(recipe: Recipe): Recipe {
-  return {
-    ...recipe,
-    ...{
-      in: cloneEntities(recipe.in),
-      out: cloneEntities(recipe.out),
-      catalyst: cloneEntities(recipe.catalyst),
-    },
-  };
+  return spread(recipe, {
+    in: cloneEntities(recipe.in),
+    out: cloneEntities(recipe.out),
+    catalyst: cloneEntities(recipe.catalyst),
+  });
 }
 
 export interface AdjustedRecipe extends Recipe {
-  productivity: Rational;
+  effects: Record<ModuleEffect, Rational>;
   produces: Set<string>;
   output: Entities<Rational>;
 }
@@ -100,12 +106,15 @@ export interface AdjustedRecipe extends Recipe {
 export function finalizeRecipe(recipe: AdjustedRecipe): void {
   for (const outId of Object.keys(recipe.out)) {
     const output = recipe.out[outId];
-    if (recipe.in[outId] == null || recipe.in[outId].lt(output)) {
+
+    if (
+      output.gt(rational.zero) &&
+      (recipe.in[outId] == null || recipe.in[outId].lt(output))
+    )
       recipe.produces.add(outId);
-    }
 
     recipe.output[outId] = output
-      .sub(recipe.in[outId] ?? rational(0n))
+      .sub(recipe.in[outId] ?? rational.zero)
       .div(recipe.time);
   }
 

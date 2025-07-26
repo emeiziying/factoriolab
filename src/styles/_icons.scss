@@ -1,44 +1,35 @@
 .lab-icon {
+  display: inline-block;
   position: relative;
   flex-shrink: 0;
-
-  display: inline-block;
-
   margin: 1px;
   width: 32px;
   height: 32px;
 
   &::before {
-    content: '';
-
     position: absolute;
     top: 0;
     left: 0;
-
     transform: scale(0.5);
     transform-origin: 0 0;
 
+    /** Set up base app related icons sprite sheet */
+    background-image: url('../assets/icons/icons.webp');
     width: 64px;
     height: 64px;
-  }
-
-  > span,
-  &::after {
-    // Styles for text overlay
-    position: absolute;
-
-    font-size: 1rem;
-    line-height: 1rem;
+    text-align: end;
+    text-shadow:
+      0 2px 2px black,
+      0 -2px 2px black,
+      2px 0 2px black,
+      -2px 0 2px black;
+    line-height: 2rem;
+    white-space: nowrap;
+    color: white;
+    font-size: 2rem;
     font-weight: 700;
     font-style: normal;
-    color: white;
-
-    white-space: nowrap;
-    text-shadow:
-      0px 2px 2px black,
-      0px -2px 2px black,
-      2px 0px 2px black,
-      -2px 0px 2px black;
+    content: '';
     pointer-events: none;
   }
 
@@ -47,14 +38,22 @@
    * Display in lower right.
    */
   > span {
-    bottom: -3px;
-    right: -2px;
-  }
-
-  /** E.G. Temperature of fluid. Display in upper right. */
-  &::after {
-    top: -7px;
+    position: absolute;
     right: -6px;
+    bottom: -6px;
+    z-index: 1;
+    text-shadow:
+      0 2px 2px black,
+      0 -2px 2px black,
+      2px 0 2px black,
+      -2px 0 2px black;
+    line-height: 1rem;
+    white-space: nowrap;
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    font-style: normal;
+    pointer-events: none;
   }
 
   &.lg {
@@ -71,7 +70,8 @@
     width: 20px;
     height: 20px;
 
-    &::before {
+    &::before,
+    &::after {
       top: -6px;
       left: -6px;
     }
@@ -84,37 +84,42 @@
       margin-left: 0.75rem;
     }
   }
-}
 
-/** Set up base app related icons sprite sheet */
-.lab-icon {
-  &::before {
-    background-image: url('../assets/icons/icons.webp');
+  &.sum::before {
+    content: 'Σ';
   }
 }
 
-.dyson-sphere-program::before {
-  background-position: -66px -1px;
+.game-captain-of-industry::before {
+  background-position: -64px 0;
 }
 
-.factorio::before {
-  background-position: -131px -1px;
+.game-dyson-sphere-program::before {
+  background-position: -128px 0;
 }
 
-.fast-inserter::before {
-  background-position: -196px -1px;
+.game-factorio::before {
+  background-position: -192px 0;
 }
 
-.inserter::before {
-  background-position: -1px -66px;
+.game-final-factory::before {
+  background-position: -256px 0;
 }
 
-.long-handed-inserter::before {
-  background-position: -66px -66px;
+.game-satisfactory::before {
+  background-position: 0 -64px;
+}
+
+.game-techtonica::before {
+  background-position: -64px -64px;
+}
+
+.game-mindustry::before {
+  background-position: -64px -256px;
 }
 
 .module::before {
-  background-position: -131px -66px;
+  background-position: -128px -64px;
 }
 
 body.light .module::before {
@@ -122,29 +127,86 @@ body.light .module::before {
 }
 
 .pipe::before {
-  background-position: -196px -66px;
-}
-
-.satisfactory::before {
-  background-position: -1px -131px;
-}
-
-.stack-inserter::before {
-  background-position: -66px -131px;
+  background-position: -192px -64px;
 }
 
 .time::before {
-  background-position: -131px -131px;
+  background-position: -256px -64px;
 }
 
-.captain-of-industry::before {
-  background-position: -196px -131px;
+.fast-inserter::before {
+  background-position: 0 -128px;
 }
 
-.techtonica::before {
-  background-position: -1px -196px;
+.inserter::before {
+  background-position: -64px -128px;
 }
 
-.final-factory::before {
-  background-position: -66px -196px;
+.long-handed-inserter::before {
+  background-position: -128px -128px;
+}
+
+.stack-inserter::before {
+  background-position: -192px -128px;
+}
+
+.q-1,
+.q0,
+.q1,
+.q2,
+.q3,
+.q5 {
+  &::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: scale(0.5);
+    transform-origin: 0 0;
+
+    /** Set up base app related icons sprite sheet */
+    background-image: url('../assets/icons/icons.webp');
+    width: 64px;
+    height: 64px;
+    content: '';
+  }
+}
+
+.q-1::after {
+  background-position: -256px -128px;
+}
+
+.q0::after {
+  background-position: 0 -192px;
+}
+
+.q1::after {
+  background-position: -64px -192px;
+}
+
+.q2::after {
+  background-position: -128px -192px;
+}
+
+.q3::after {
+  background-position: -192px -192px;
+}
+
+.q5::after {
+  background-position: -256px -192px;
+}
+
+.game-factor-y::before {
+  background-position: 0 -256px;
+}
+
+.game-foundry::before {
+  background-position: -128px -256px;
+}
+
+.game-outworld-station::before {
+  background-position: -192px -256px;
+}
+
+.transparent::before {
+  background-position: -256px -256px;
 }

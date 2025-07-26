@@ -1,29 +1,53 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputNumberModule } from 'primeng/inputnumber';
 
-import { AppSharedModule } from '~/app-shared.module';
-import { coalesce } from '~/helpers';
-import { Game, Rational, Recipe, RecipeSettings } from '~/models';
-import { Recipes } from '~/store';
-import { DetailComponent } from '../../models';
+import { InputNumberComponent } from '~/components/input-number/input-number.component';
+import { coalesce, updateSetIds } from '~/helpers';
+import { Recipe } from '~/models/data/recipe';
+import { rational } from '~/models/rational';
+import { RecipeState } from '~/models/settings/recipe-settings';
+import { IconClassPipe, IconSmClassPipe } from '~/pipes/icon-class.pipe';
+import { RoundPipe } from '~/pipes/round.pipe';
+import { TranslatePipe } from '~/pipes/translate.pipe';
+import { UsagePipe } from '~/pipes/usage.pipe';
+
+import { DetailComponent } from '../../models/detail.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, AppSharedModule],
+  imports: [
+    FormsModule,
+    BreadcrumbModule,
+    ButtonModule,
+    CheckboxModule,
+    InputNumberModule,
+    IconClassPipe,
+    IconSmClassPipe,
+    InputNumberComponent,
+    RoundPipe,
+    TranslatePipe,
+    UsagePipe,
+  ],
   templateUrl: './recipe.component.html',
-  styleUrls: ['./recipe.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecipeComponent extends DetailComponent {
-  recipesStateRaw = this.store.selectSignal(Recipes.recipesState);
-  recipesState = this.store.selectSignal(Recipes.getRecipesState);
+  recipesStateRaw = this.recipesSvc.state;
+  recipesState = this.recipesSvc.settings;
+  settings = this.settingsSvc.settings;
+
+  rational = rational;
 
   obj = computed<Recipe | undefined>(
     () => this.data().recipeEntities[this.id()],
   );
   breadcrumb = computed<MenuItem[]>(() => [
-    this.parent(),
+    this.parent() ?? {},
     { label: this.obj()?.name },
   ]);
   info = computed(() => {
@@ -37,41 +61,39 @@ export class RecipeComponent extends DetailComponent {
       productIds: Object.keys(recipe?.out ?? {}),
     };
   });
-  recipeSettings = computed<RecipeSettings | undefined>(
+  recipeSettings = computed<RecipeState | undefined>(
     () => this.recipesState()[this.id()],
   );
   recipeR = computed<Recipe | undefined>(
     () => this.data().adjustedRecipe[this.id()],
   );
-
-  Game = Game;
-
-  toggleRecipe(): void {
-    const recipeSettings = this.recipeSettings();
-    if (recipeSettings == null) return;
-
+  unlockedBy = computed(() => {
     const id = this.id();
-    const value = !recipeSettings.excluded;
-    const def = coalesce(this.data().defaults?.excludedRecipeIds, []).some(
-      (i) => i === id,
+    const data = this.data();
+    return data.technologyIds.filter((i) =>
+      data.technologyEntities[i].unlockedRecipes?.includes(id),
     );
-    this.setRecipeExcluded(id, value, def);
+  });
+
+  changeExcluded(excluded: boolean): void {
+    const value = updateSetIds(
+      this.id(),
+      excluded,
+      this.settings().excludedRecipeIds,
+    );
+    this.settingsSvc.updateField(
+      'excludedRecipeIds',
+      value,
+      this.settings().defaultExcludedRecipeIds,
+    );
   }
 
-  /** Action dispatch methods */
-  setRecipeExcluded(id: string, value: boolean, def: boolean): void {
-    this.store.dispatch(new Recipes.SetExcludedAction({ id, value, def }));
-  }
-
-  setRecipeChecked(id: string, value: boolean): void {
-    this.store.dispatch(new Recipes.SetCheckedAction({ id, value }));
-  }
-
-  setRecipeCost(id: string, value: Rational): void {
-    this.store.dispatch(new Recipes.SetCostAction({ id, value }));
-  }
-
-  resetRecipe(value: string): void {
-    this.store.dispatch(new Recipes.ResetRecipeAction(value));
+  changeChecked(value: boolean): void {
+    const checkedRecipeIds = updateSetIds(
+      this.id(),
+      value,
+      this.settings().checkedRecipeIds,
+    );
+    this.settingsSvc.apply({ checkedRecipeIds });
   }
 }

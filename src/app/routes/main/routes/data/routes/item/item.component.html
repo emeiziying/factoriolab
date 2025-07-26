@@ -16,7 +16,7 @@
         <th>{{ 'data.category' | translate }}</th>
         <td>
           <a
-            [routerLink]="'/data/categories/' + obj.category"
+            [routerLink]="dataRoute() + 'categories/' + obj.category"
             queryParamsHandling="preserve"
           >
             <button
@@ -136,7 +136,7 @@
           <th>{{ 'data.burntResult' | translate }}</th>
           <td>
             <a
-              [routerLink]="'/data/items/' + fuel.result"
+              [routerLink]="dataRoute() + 'items/' + fuel.result"
               queryParamsHandling="preserve"
             >
               <button
@@ -158,10 +158,12 @@
           <h3>{{ 'data.machine' | translate }}</h3>
         </th>
       </tr>
-      <tr>
-        <th>{{ 'data.craftingSpeed' | translate }}</th>
-        <td>{{ machine.speed }}</td>
-      </tr>
+      @if (machine.speed) {
+        <tr>
+          <th>{{ 'data.craftingSpeed' | translate }}</th>
+          <td>{{ machine.speed | round }}</td>
+        </tr>
+      }
       @if (machine.modules) {
         <tr>
           <th>{{ 'data.moduleSlots' | translate }}</th>
@@ -247,6 +249,30 @@
           <td>{{ silo.launch | round }}</td>
         </tr>
       }
+      @if (machine.locations) {
+        <tr>
+          <th>{{ 'data.locations' | translate }}</th>
+          <td>
+            @for (i of machine.locations; track i) {
+              <div>
+                <a
+                  [routerLink]="dataRoute() + 'locations/' + i"
+                  queryParamsHandling="preserve"
+                >
+                  <button
+                    pButton
+                    pRipple
+                    type="button"
+                    class="p-button-text"
+                    [label]="data().locationEntities[i].name"
+                    [icon]="i | iconSmClass: 'location'"
+                  ></button>
+                </a>
+              </div>
+            }
+          </td>
+        </tr>
+      }
     }
     @if (obj.module; as module) {
       <tr>
@@ -260,10 +286,10 @@
           <td>{{ module.consumption | bonusPercent }}</td>
         </tr>
       }
-      @if (module.pollution) {
+      @if (module.speed) {
         <tr>
-          <th>{{ 'data.pollution' | translate }}</th>
-          <td>{{ module.pollution | bonusPercent }}</td>
+          <th>{{ 'data.speed' | translate }}</th>
+          <td>{{ module.speed | bonusPercent }}</td>
         </tr>
       }
       @if (module.productivity) {
@@ -272,10 +298,16 @@
           <td>{{ module.productivity | bonusPercent }}</td>
         </tr>
       }
-      @if (module.speed) {
+      @if (module.pollution) {
         <tr>
-          <th>{{ 'data.speed' | translate }}</th>
-          <td>{{ module.speed | bonusPercent }}</td>
+          <th>{{ 'data.pollution' | translate }}</th>
+          <td>{{ module.pollution | bonusPercent }}</td>
+        </tr>
+      }
+      @if (module.quality && module.quality.nonzero()) {
+        <tr>
+          <th>{{ 'data.quality' | translate }}</th>
+          <td>{{ module.quality | bonusPercent }}</td>
         </tr>
       }
       @if (module.sprays) {
@@ -289,7 +321,7 @@
           <th>{{ 'data.proliferator' | translate }}</th>
           <td>
             <a
-              [routerLink]="'/data/items/' + module.proliferator"
+              [routerLink]="dataRoute() + 'items/' + module.proliferator"
               queryParamsHandling="preserve"
             >
               <button
@@ -331,7 +363,7 @@
           @for (i of technology.prerequisites; track i) {
             <div>
               <a
-                [routerLink]="'/data/technologies/' + i"
+                [routerLink]="dataRoute() + 'technologies/' + i"
                 queryParamsHandling="preserve"
               >
                 <button
@@ -367,7 +399,7 @@
               type="button"
               class="ms-2 p-button-rounded"
               icon="fa-solid fa-rotate-left"
-              (click)="resetItem(id())"
+              (click)="itemsSvc.resetId(id())"
             ></button>
           </div>
         </th>
@@ -376,9 +408,9 @@
         <th>{{ 'data.excluded' | translate }}</th>
         <td>
           <p-checkbox
-            [ngModel]="itemSettings.excluded"
+            [ngModel]="settings().excludedItemIds.has(id())"
             [binary]="true"
-            (onChange)="setItemExcluded(id(), $event.checked)"
+            (onChange)="changeExcluded($event.checked)"
           ></p-checkbox>
         </td>
       </tr>
@@ -386,31 +418,48 @@
         <th>{{ 'data.checked' | translate }}</th>
         <td>
           <p-checkbox
-            [ngModel]="itemSettings.checked"
+            [ngModel]="settings().checkedItemIds.has(id())"
             [binary]="true"
-            (onChange)="setItemChecked(id(), $event.checked)"
+            (onChange)="changeChecked($event.checked)"
           ></p-checkbox>
         </td>
       </tr>
-      @if (
-        data().game !== Game.DysonSphereProgram ||
-        itemSettings.beltId !== ItemId.Pipe
-      ) {
+      <tr>
+        <th>{{ 'data.belt' | translate }}</th>
+        @if (itemSettings.beltId; as beltId) {
+          <td>
+            <a
+              [routerLink]="
+                dataRoute() +
+                (data().beltIds.includes(beltId)
+                  ? 'belts'
+                  : data().pipeIds.includes(beltId)
+                    ? 'pipes'
+                    : 'items') +
+                '/' +
+                beltId
+              "
+              queryParamsHandling="preserve"
+            >
+              <button
+                pButton
+                pRipple
+                type="button"
+                class="p-button-text"
+                [label]="data().itemEntities[beltId].name"
+                [icon]="beltId | iconSmClass: 'item'"
+              ></button>
+            </a>
+          </td>
+        }
+      </tr>
+      @if (itemSettings.wagonId; as wagonId) {
         <tr>
-          <th>{{ 'data.belt' | translate }}</th>
-          @if (itemSettings.beltId; as beltId) {
+          @if (obj.stack) {
+            <th>{{ 'data.cargoWagon' | translate }}</th>
             <td>
               <a
-                [routerLink]="
-                  '/data/' +
-                  (data().beltIds.indexOf(beltId) !== -1
-                    ? 'belts'
-                    : data().pipeIds.indexOf(beltId) !== -1
-                      ? 'pipes'
-                      : 'items') +
-                  '/' +
-                  beltId
-                "
+                [routerLink]="dataRoute() + 'cargo-wagons/' + wagonId"
                 queryParamsHandling="preserve"
               >
                 <button
@@ -418,54 +467,30 @@
                   pRipple
                   type="button"
                   class="p-button-text"
-                  [label]="data().itemEntities[beltId].name"
-                  [icon]="beltId | iconSmClass: 'item'"
+                  [label]="data().itemEntities[wagonId].name"
+                  [icon]="wagonId | iconSmClass: 'item'"
+                ></button>
+              </a>
+            </td>
+          } @else {
+            <th>{{ 'data.fluidWagon' | translate }}</th>
+            <td>
+              <a
+                [routerLink]="dataRoute() + 'fluid-wagons/' + wagonId"
+                queryParamsHandling="preserve"
+              >
+                <button
+                  pButton
+                  pRipple
+                  type="button"
+                  class="p-button-text"
+                  [label]="data().itemEntities[wagonId].name"
+                  [icon]="wagonId | iconSmClass: 'item'"
                 ></button>
               </a>
             </td>
           }
         </tr>
-      }
-      @if (data().game === Game.Factorio || data().game === Game.Satisfactory) {
-        @if (itemSettings.wagonId; as wagonId) {
-          <tr>
-            @if (obj.stack) {
-              <th>{{ 'data.cargoWagon' | translate }}</th>
-              <td>
-                <a
-                  [routerLink]="'/data/cargo-wagons/' + wagonId"
-                  queryParamsHandling="preserve"
-                >
-                  <button
-                    pButton
-                    pRipple
-                    type="button"
-                    class="p-button-text"
-                    [label]="data().itemEntities[wagonId].name"
-                    [icon]="wagonId | iconSmClass: 'item'"
-                  ></button>
-                </a>
-              </td>
-            } @else {
-              <th>{{ 'data.fluidWagon' | translate }}</th>
-              <td>
-                <a
-                  [routerLink]="'/data/fluid-wagons/' + wagonId"
-                  queryParamsHandling="preserve"
-                >
-                  <button
-                    pButton
-                    pRipple
-                    type="button"
-                    class="p-button-text"
-                    [label]="data().itemEntities[wagonId].name"
-                    [icon]="wagonId | iconSmClass: 'item'"
-                  ></button>
-                </a>
-              </td>
-            }
-          </tr>
-        }
       }
     }
     @if (obj.machine && machineSettings(); as machineSettings) {
@@ -482,13 +507,13 @@
             <h3>{{ 'data.machineSettings' | translate }}</h3>
 
             <button
-              [class.invisible]="!machinesStateRaw().entities[id()]"
+              [class.invisible]="!machinesStateRaw()[id()]"
               pButton
               pRipple
               type="button"
               class="p-button-rounded justify-self-end"
               icon="fa-solid fa-rotate-left"
-              (click)="resetMachine(id())"
+              (click)="machinesSvc.resetId(id())"
             ></button>
           </div>
         </th>
@@ -496,73 +521,17 @@
       <tr>
         <th>{{ 'data.moduleRank' | translate }}</th>
         <td>
-          @if (!machineSettings.moduleRankIds?.length) {
+          @if (!machineSettings.modules?.length) {
             <div>{{ 'none' | translate }}</div>
           }
-          @for (moduleId of machineSettings.moduleRankIds; track moduleId) {
-            <div>
-              <a
-                [routerLink]="
-                  moduleId === 'module' ? null : '/data/modules/' + moduleId
-                "
-                queryParamsHandling="preserve"
-              >
-                <button
-                  pButton
-                  pRipple
-                  type="button"
-                  class="p-button-text"
-                  [label]="data().itemEntities[moduleId]?.name ?? ''"
-                  [icon]="moduleId | iconSmClass: 'item'"
-                ></button>
-              </a>
-            </div>
-          }
-        </td>
-      </tr>
-      @if (data().game === Game.Factorio) {
-        <tr>
-          <th>{{ 'data.beacons' | translate }}</th>
-          <td>
-            {{ machineSettings.beaconCount ?? ('none' | translate) }}
-          </td>
-        </tr>
-        <tr>
-          <th>{{ 'data.beacon' | translate }}</th>
-          <td>
-            @if (machineSettings.beaconId; as beaconId) {
-              <a
-                [routerLink]="'/data/beacons/' + beaconId"
-                queryParamsHandling="preserve"
-              >
-                <button
-                  pButton
-                  pRipple
-                  type="button"
-                  class="p-button-text"
-                  [label]="data().itemEntities[beaconId].name"
-                  [icon]="beaconId | iconSmClass: 'item'"
-                ></button>
-              </a>
-            } @else {
-              {{ 'none' | translate }}
-            }
-          </td>
-        </tr>
-        <tr>
-          <th>{{ 'data.beaconModuleRank' | translate }}</th>
-          <td>
-            @if (!machineSettings.beaconModuleRankIds?.length) {
-              <div>{{ 'none' | translate }}</div>
-            }
-            @for (
-              moduleId of machineSettings.beaconModuleRankIds;
-              track moduleId
-            ) {
+          @for (module of machineSettings.modules; track module.id) {
+            @if (module.id; as moduleId) {
               <div>
                 <a
                   [routerLink]="
-                    moduleId === 'module' ? null : '/data/modules/' + moduleId
+                    moduleId === 'module'
+                      ? null
+                      : dataRoute() + 'modules/' + moduleId
                   "
                   queryParamsHandling="preserve"
                 >
@@ -577,10 +546,60 @@
                 </a>
               </div>
             }
+          }
+        </td>
+      </tr>
+      @if (data().flags.has('beacons')) {
+        <tr>
+          <th>{{ 'data.beacons' | translate }}</th>
+          <td>
+            @for (beacon of machineSettings.beacons; track $index) {
+              <div>
+                @if (beacon.id) {
+                  <a
+                    [routerLink]="dataRoute() + 'beacons/' + beacon.id"
+                    queryParamsHandling="preserve"
+                  >
+                    <button
+                      pButton
+                      pRipple
+                      type="button"
+                      class="p-button-text"
+                      [label]="data().itemEntities[beacon.id].name"
+                      [icon]="beacon.id | iconSmClass"
+                    ></button>
+                  </a>
+                }
+                <span class="ms-3">{{ beacon.count }}</span>
+              </div>
+              @for (module of beacon.modules; track module.id) {
+                @if (module.id; as moduleId) {
+                  <div>
+                    @if (moduleId === 'module') {
+                      <i [class]="moduleId | iconSmClass"> </i>
+                    } @else {
+                      <a
+                        [routerLink]="dataRoute() + 'modules/' + moduleId"
+                        queryParamsHandling="preserve"
+                      >
+                        <button
+                          pButton
+                          pRipple
+                          type="button"
+                          class="p-button-text"
+                          [label]="data().itemEntities[moduleId].name"
+                          [icon]="moduleId | iconSmClass"
+                        ></button>
+                      </a>
+                    }
+                  </div>
+                }
+              }
+            }
           </td>
         </tr>
       }
-      @if (data().game === Game.Satisfactory) {
+      @if (data().flags.has('overclock')) {
         <tr>
           <th>{{ 'data.overclock' | translate }}</th>
           <td>{{ machineSettings.overclock }}%</td>

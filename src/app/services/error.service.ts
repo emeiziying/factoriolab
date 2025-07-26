@@ -1,28 +1,19 @@
-import {
-  ErrorHandler,
-  inject,
-  Injectable,
-  NgZone,
-  signal,
-} from '@angular/core';
+import { ErrorHandler, inject, Injectable, NgZone } from '@angular/core';
+
+import { DataService } from './data.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ErrorService {
-  message = signal<string | null>(null);
-}
-
-@Injectable()
-export class LabErrorHandler implements ErrorHandler {
+export class ErrorService implements ErrorHandler {
+  dataSvc = inject(DataService);
   ngZone = inject(NgZone);
-  error = inject(ErrorService);
 
   handleError(error: string): void {
-    if (this.error.message() == null) {
+    if (this.dataSvc.error$.value == null) {
       this.ngZone.run(() => {
         console.error(error);
-        this.error.message.set(error);
+        this.dataSvc.error$.next(error);
       });
     }
   }

@@ -1,6 +1,8 @@
 import { SelectItem } from 'primeng/api';
 
-import { GameInfo } from '../game-info';
+import { spread } from '~/helpers';
+
+import { Flag } from '../flags';
 
 export type ColumnKey =
   | 'checkbox'
@@ -20,8 +22,9 @@ export interface ColumnSettings {
 }
 
 export interface ColumnInfo {
-  hideDefault?: boolean;
-  hasPrecision?: boolean;
+  hideDefault?: true;
+  hasPrecision?: true;
+  flag?: true;
 }
 
 export type ColumnsState = Record<ColumnKey, ColumnSettings>;
@@ -33,11 +36,11 @@ export const columnsInfo: ColumnsInfo = {
   tree: {},
   items: { hasPrecision: true },
   belts: { hasPrecision: true },
-  wagons: { hasPrecision: true },
+  wagons: { hasPrecision: true, flag: true },
   machines: { hasPrecision: true },
-  beacons: {},
-  power: { hasPrecision: true },
-  pollution: { hasPrecision: true },
+  beacons: { flag: true },
+  power: { hasPrecision: true, flag: true },
+  pollution: { hasPrecision: true, flag: true },
   link: {},
 };
 
@@ -60,9 +63,9 @@ export const initialColumnsState: ColumnsState = allColumns.reduce(
 ) as ColumnsState;
 
 /** Get column options for passed game */
-export function columnOptions(gameInfo: GameInfo): SelectItem<ColumnKey>[] {
+export function columnOptions(flags: Set<Flag>): SelectItem<ColumnKey>[] {
   return allColumns
-    .filter((c) => gameInfo.hideColumns.indexOf(c) === -1)
+    .filter((c) => !columnsInfo[c].flag || flags.has(c as Flag))
     .map(
       (id): SelectItem<ColumnKey> => ({
         label: `options.column.${id}`,
@@ -74,14 +77,15 @@ export function columnOptions(gameInfo: GameInfo): SelectItem<ColumnKey>[] {
 
 export function gameColumnsState(
   columnsState: ColumnsState,
-  gameInfo: GameInfo,
+  flags: Set<Flag>,
 ): ColumnsState {
-  gameInfo.hideColumns.forEach((c) => {
-    columnsState = {
-      ...columnsState,
-      ...{ [c]: { ...columnsState[c], ...{ show: false } } },
-    };
-  });
+  allColumns
+    .filter((c) => columnsInfo[c].flag && !flags.has(c as Flag))
+    .forEach((c) => {
+      columnsState = spread(columnsState, {
+        [c]: spread(columnsState[c], { show: false }),
+      });
+    });
 
   return columnsState;
 }

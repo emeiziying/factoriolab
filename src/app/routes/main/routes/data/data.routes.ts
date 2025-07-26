@@ -1,7 +1,4 @@
-import { RouterModule } from '@angular/router';
-
-import { DataComponent } from './data.component';
-import { DataRoute } from './models';
+import { DataRoute } from './models/data-route';
 
 export const routes: DataRoute[] = [
   {
@@ -247,10 +244,31 @@ export const routes: DataRoute[] = [
     },
   },
   {
+    path: 'locations/:id',
+    loadComponent: () =>
+      import('./routes/location/location.component').then(
+        (c) => c.LocationComponent,
+      ),
+    data: {
+      collectionLabel: 'data.locations',
+    },
+  },
+  {
+    path: 'locations',
+    loadComponent: () =>
+      import('./routes/collection/collection.component').then(
+        (c) => c.CollectionComponent,
+      ),
+    data: {
+      label: 'data.locations',
+      type: 'location',
+      key: 'locationIds',
+    },
+  },
+  {
     path: '',
     pathMatch: 'full',
-    component: DataComponent,
+    loadComponent: () =>
+      import('./data.component').then((c) => c.DataComponent),
   },
 ];
-
-export const DataRoutingModule = RouterModule.forChild(routes);

@@ -1,30 +1,20 @@
-import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MockStore } from '@ngrx/store/testing';
 
-import { TestModule } from 'src/tests';
-import { ContentService } from '~/services';
-import { Preferences } from '~/store';
+import { initialPreferencesState } from '~/store/preferences.service';
+import { Mocks, TestModule } from '~/tests';
+
 import { ColumnsComponent } from './columns.component';
 
 describe('ColumnsComponent', () => {
   let component: ColumnsComponent;
   let fixture: ComponentFixture<ColumnsComponent>;
-  let markForCheck: jasmine.Spy;
-  let mockStore: MockStore;
-  let contentSvc: ContentService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ColumnsComponent],
-      imports: [TestModule],
+      imports: [TestModule, ColumnsComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ColumnsComponent);
-    const ref = fixture.debugElement.injector.get(ChangeDetectorRef);
-    markForCheck = spyOn(ref.constructor.prototype, 'markForCheck');
-    mockStore = TestBed.inject(MockStore);
-    contentSvc = TestBed.inject(ContentService);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -42,11 +32,14 @@ describe('ColumnsComponent', () => {
     });
   });
 
-  describe('ngOnInit', () => {
-    it('should watch subject to show dialog', () => {
-      contentSvc.showColumns$.next();
-      expect(component.visible).toBeTrue();
-      expect(markForCheck).toHaveBeenCalled();
+  describe('open', () => {
+    it('should set up the editValue and show the dialog', () => {
+      spyOn(component, 'show');
+      component.editValue = null as any;
+      component.open(Mocks.preferencesState.columns);
+      expect(component.editValue).toEqual(Mocks.preferencesState.columns);
+      expect(component.editValue).not.toBe(Mocks.preferencesState.columns);
+      expect(component.show).toHaveBeenCalled();
     });
   });
 
@@ -63,19 +56,17 @@ describe('ColumnsComponent', () => {
     it('should set the value back to the initial state', () => {
       component.editValue = null as any;
       component.reset();
-      expect(component.editValue).toEqual(
-        Preferences.initialPreferencesState.columns,
-      );
+      expect(component.editValue).toEqual(initialPreferencesState.columns);
     });
   });
 
   describe('save', () => {
     it('should dispatch the action', () => {
-      spyOn(mockStore, 'dispatch');
-      component.save();
-      expect(mockStore.dispatch).toHaveBeenCalledWith(
-        new Preferences.SetColumnsAction(component.editValue as any),
-      );
+      spyOn(component.preferencesSvc, 'apply');
+      component.onHide();
+      expect(component.preferencesSvc.apply).toHaveBeenCalledWith({
+        columns: component.editValue as any,
+      });
     });
   });
 });

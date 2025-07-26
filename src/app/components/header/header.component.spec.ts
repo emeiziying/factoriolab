@@ -1,26 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Title } from '@angular/platform-browser';
-import { MockStore } from '@ngrx/store/testing';
 
-import { Mocks, TestModule } from 'src/tests';
-import { Objectives } from '~/store';
+import { Mocks, TestModule } from '~/tests';
+
 import { HeaderComponent } from './header.component';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
-  let title: Title;
-  let mockStore: MockStore;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HeaderComponent],
-      imports: [TestModule],
+      imports: [TestModule, HeaderComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HeaderComponent);
-    title = TestBed.inject(Title);
-    mockStore = TestBed.inject(MockStore);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -31,13 +24,11 @@ describe('HeaderComponent', () => {
 
   describe('ngOnInit', () => {
     it('should update the page title with the first objective name', () => {
-      spyOn(title, 'setTitle');
-      mockStore.overrideSelector(
-        Objectives.getBaseObjectives,
-        Mocks.ObjectivesList,
-      );
-      mockStore.refreshState();
-      expect(title.setTitle).toHaveBeenCalledWith(
+      spyOn(component.title, 'setTitle');
+
+      component.objectivesSvc.load(Mocks.objectivesState);
+      fixture.detectChanges();
+      expect(component.title.setTitle).toHaveBeenCalledWith(
         'Advanced circuit | FactorioLab',
       );
     });

@@ -1,6 +1,7 @@
 import { SelectItem } from 'primeng/api';
 
-import { Game } from './game';
+import { DefaultsJson } from '../data/defaults';
+import { Flag } from '../flags';
 
 export enum Preset {
   Minimum = 0,
@@ -9,22 +10,36 @@ export enum Preset {
   Beacon12 = 3,
 }
 
-export function presetOptions(game: Game): SelectItem<Preset>[] {
-  return game === Game.Factorio
-    ? [
-        { value: Preset.Minimum, label: 'options.preset.minimum' },
-        { value: Preset.Modules, label: 'options.preset.modules' },
-        { value: Preset.Beacon8, label: 'options.preset.beacon8' },
-        { value: Preset.Beacon12, label: 'options.preset.beacon12' },
-      ]
-    : game === Game.DysonSphereProgram
-      ? [
-          { value: Preset.Minimum, label: 'options.preset.minimum' },
-          { value: Preset.Modules, label: 'options.preset.upgraded' },
-          { value: Preset.Beacon8, label: 'options.preset.proliferated' },
-        ]
-      : [
-          { value: Preset.Minimum, label: 'options.preset.minimum' },
-          { value: Preset.Modules, label: 'options.preset.upgraded' },
-        ];
+export function presetOptions(
+  flags: Set<Flag>,
+  defaults: DefaultsJson | undefined = undefined,
+): SelectItem<Preset>[] {
+  if (defaults && 'presets' in defaults) {
+    return defaults.presets.map((preset) => ({
+      value: preset.id,
+      label: preset.label,
+    }));
+  }
+
+  const options: SelectItem<Preset>[] = [
+    { value: Preset.Minimum, label: 'options.preset.minimum' },
+    { value: Preset.Modules, label: 'options.preset.upgraded' },
+  ];
+
+  if (flags.has('beacons')) {
+    options[1].label = 'options.preset.modules';
+    options.push(
+      { value: Preset.Beacon8, label: 'options.preset.beacon8' },
+      { value: Preset.Beacon12, label: 'options.preset.beacon12' },
+    );
+  }
+
+  if (flags.has('proliferator')) {
+    options.push({
+      value: Preset.Beacon8,
+      label: 'options.preset.proliferated',
+    });
+  }
+
+  return options;
 }
